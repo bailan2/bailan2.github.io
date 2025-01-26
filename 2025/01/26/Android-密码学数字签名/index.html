@@ -1,0 +1,335 @@
+<!DOCTYPE html><html lang="zh_CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Android-密码学数字签名 | 摆烂小子</title><meta name="author" content="摆烂小子"><meta name="copyright" content="摆烂小子"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="数字签名数字签名介绍数字签名是非对称密钥加密技术与数字摘要技术的应用，可以用来保证数据不可伪造并且确认数据是由谁发送的。 简单来说就是数字摘要(md5、sha系列。。)和RSA的结合，即对明文数据进行数字摘要后，再使用RSA的私钥对数字摘要hash值进行加密，最后通过RSA的公钥解密验证。 这么做的原因是通过数字摘要的靠伪造性可以保证数据不可伪造。  如果修改了消息，接收方可以对消息进行哈希后和数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android-密码学数字签名">
+<meta property="og:url" content="https://bailan2.github.io/2025/01/26/Android-%E5%AF%86%E7%A0%81%E5%AD%A6%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D/index.html">
+<meta property="og:site_name" content="摆烂小子">
+<meta property="og:description" content="数字签名数字签名介绍数字签名是非对称密钥加密技术与数字摘要技术的应用，可以用来保证数据不可伪造并且确认数据是由谁发送的。 简单来说就是数字摘要(md5、sha系列。。)和RSA的结合，即对明文数据进行数字摘要后，再使用RSA的私钥对数字摘要hash值进行加密，最后通过RSA的公钥解密验证。 这么做的原因是通过数字摘要的靠伪造性可以保证数据不可伪造。  如果修改了消息，接收方可以对消息进行哈希后和数">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://bailan2.github.io/img/android.png">
+<meta property="article:published_time" content="2025-01-26T03:14:48.000Z">
+<meta property="article:modified_time" content="2025-01-26T03:15:32.074Z">
+<meta property="article:author" content="摆烂小子">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://bailan2.github.io/img/android.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://bailan2.github.io/2025/01/26/Android-%E5%AF%86%E7%A0%81%E5%AD%A6%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: true,
+    post: true
+  },
+  runtime: 'days',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"Author: 摆烂小子","link":"Link: ","source":"Source: 摆烂小子","info":"Copyright is owned by the author. For commercial reprints, please contact the author for authorization. For non-commercial reprints, please indicate the source."}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Android-密码学数字签名',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-01-26 11:15:32'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.1.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">Loading...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/title.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">89</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/./img/android.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">摆烂小子</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Android-密码学数字签名</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-01-26T03:14:48.000Z" title="Created 2025-01-26 11:14:48">2025-01-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-01-26T03:15:32.074Z" title="Updated 2025-01-26 11:15:32">2025-01-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Android%E9%80%86%E5%90%91/">Android逆向</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">1.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>8min</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Android-密码学数字签名"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h1><h2 id="数字签名介绍"><a href="#数字签名介绍" class="headerlink" title="数字签名介绍"></a>数字签名介绍</h2><p>数字签名是非对称密钥加密技术与数字摘要技术的应用，可以用来<strong>保证数据不可伪造并且确认数据是由谁发送的</strong>。</p>
+<p>简单来说就是数字摘要(md5、sha系列。。)和RSA的结合，即对明文数据进行数字摘要后，再使用RSA的私钥对数字摘要hash值进行加密，最后通过RSA的公钥解密验证。</p>
+<p>这么做的原因是通过数字摘要的靠伪造性可以保证数据不可伪造。</p>
+<ul>
+<li>如果修改了消息，接收方可以对消息进行哈希后和数字摘要验证是否一致得知消息是否被伪造。</li>
+<li>但是为了防止攻击者如果同时篡改了消息和数字摘要（在数字摘要算法泄露的情况下，如使用常规的公开的md5），需要使用RSA再进行一次加密，通过私钥加密公钥解密验证的方式，可以保证数据不可伪造并且根据公钥的对应信息可以得知</li>
+<li>由于攻击者无法得知加密者的私钥，因而无法伪造RSA加密。</li>
+<li>这俩个缺一不可，缺少了RSA安全性降低，缺少了数字摘要，则效率降低，因为RSA处理大数据的效率十分缓慢，对于几G的文件信息几乎难以使用RSA，因此需要先进行数字摘要获取较短的消息（如md5的128bit）后使用RSA处理。</li>
+</ul>
+<h2 id="JAVA中实现"><a href="#JAVA中实现" class="headerlink" title="JAVA中实现"></a>JAVA中实现</h2><p>但是在java中，发现数字签名算法并不是简单的进行数字摘要后再进行RSA加密的操作，这里记录一下,。</p>
+<h3 id="数字签名整体实现"><a href="#数字签名整体实现" class="headerlink" title="数字签名整体实现"></a>数字签名整体实现</h3><p>1、首先需要获取一个RSA的公私钥对，可以从网站生成：<a target="_blank" rel="noopener" href="https://www.metools.info/code/c80.html">在线生成公钥私钥对，RSA公私钥生成-ME2在线工具</a>，注意java里的密钥格式只支持<code>PKCS#8</code>。</p>
+<p>2、代码实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">message</span> <span class="operator">=</span> <span class="string">&quot;hello world!&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">string_publickey</span> <span class="operator">=</span> <span class="string">&quot;MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAl1fMaxLw1PP6DYnmjNDJ&quot;</span> +</span><br><span class="line">    <span class="string">&quot;/xc2a1siGI9lvzAML/nKTLwKMTgUsYRIFBGetlQqihZLwIi4FHwFrsB4K7Q1wBLj&quot;</span> +</span><br><span class="line">    <span class="string">&quot;a9juUnQj603K9E8JGHK/BQbo4qkPIq4bYiJoPefYmY/xZuN34tpLcgd+M0L7wdnZ&quot;</span> +</span><br><span class="line">    <span class="string">&quot;sjAXyesh2/Ofz24a3y+EcVlamsl090jUTVVFDUByLxpGhFmLEzKip8114Y5ArWoV&quot;</span> +</span><br><span class="line">    <span class="string">&quot;kr46SLwZFvdOlcNiKJRhyG4nv7/6c4lzKQ0PFf1qBalZjoBOCqqtQBk8csuy0ujS&quot;</span> +</span><br><span class="line">    <span class="string">&quot;wKNQCxZ7SxkWXNggeH2V3F6FWmcrdBSNB3XgY4/P2UsyEvxUXSvbTEJ3JPYMVGxK&quot;</span> +</span><br><span class="line">    <span class="string">&quot;QQIDAQAB&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">string_privateKey</span> <span class="operator">=</span> <span class="string">&quot;MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCXV8xrEvDU8/oN&quot;</span> +</span><br><span class="line">    <span class="string">&quot;ieaM0Mn/FzZrWyIYj2W/MAwv+cpMvAoxOBSxhEgUEZ62VCqKFkvAiLgUfAWuwHgr&quot;</span> +</span><br><span class="line">    <span class="string">&quot;tDXAEuNr2O5SdCPrTcr0TwkYcr8FBujiqQ8irhtiImg959iZj/Fm43fi2ktyB34z&quot;</span> +</span><br><span class="line">    <span class="string">&quot;QvvB2dmyMBfJ6yHb85/PbhrfL4RxWVqayXT3SNRNVUUNQHIvGkaEWYsTMqKnzXXh&quot;</span> +</span><br><span class="line">    <span class="string">&quot;jkCtahWSvjpIvBkW906Vw2IolGHIbie/v/pziXMpDQ8V/WoFqVmOgE4Kqq1AGTxy&quot;</span> +</span><br><span class="line">    <span class="string">&quot;y7LS6NLAo1ALFntLGRZc2CB4fZXcXoVaZyt0FI0HdeBjj8/ZSzIS/FRdK9tMQnck&quot;</span> +</span><br><span class="line">    <span class="string">&quot;9gxUbEpBAgMBAAECggEAJhXxuvZixex5/mM4MjKuyrOgPccK3wxjKghg4MfnKYVe&quot;</span> +</span><br><span class="line">    <span class="string">&quot;uUEoL/4el3JRsweeRu7SdGrTjFAjq/UCqNjqd+Io+jB21SgmC+ahTvb+zni96nlx&quot;</span> +</span><br><span class="line">    <span class="string">&quot;LO0ngm43NOx8uCt6vjZTpTVUK7IMr28ESskuCvwURTvGGMnD1RLLoktOluDh3xYe&quot;</span> +</span><br><span class="line">    <span class="string">&quot;0dAwtnvYwV/ptVWKESjLwI7vpyNzdWw8zyDeHnEf1Km/9vfXfZFlkfcHiHE9ZBFL&quot;</span> +</span><br><span class="line">    <span class="string">&quot;Fs9cUeA1GE90sWh6XNroDphczKTBtHq7DIEvkB0A2q1LZK0t26Bp8iX8OKSg/NZr&quot;</span> +</span><br><span class="line">    <span class="string">&quot;xKxUNJpM4PEE/8Jn3OGUTd431FE0d5U1GVEsfBKQEwKBgQDK/DT+1zmR4eEVi7yv&quot;</span> +</span><br><span class="line">    <span class="string">&quot;FVvW3OJzjq8YLICQYxWeOYSO7qp48qzMKeFcOMH9fZBp3KLD1xiMZw7dhXIgKwWM&quot;</span> +</span><br><span class="line">    <span class="string">&quot;PVv8gTUQGBURljMMTPNq9ntHV3Sdvu4SlqyElMjUZ8iDFZ781cDlXn5qVACfqT3i&quot;</span> +</span><br><span class="line">    <span class="string">&quot;nH7BxOhjv4rscWDhB3fiRAcHlwKBgQC+3r2mMd7Tkn1VqdZpYQ4W+GUjHI9cDoKL&quot;</span> +</span><br><span class="line">    <span class="string">&quot;nWGGo89TMCf0lFCIgHKSx5pHfJmQ+RgbOXaiQQdjDUuNerOClZRHLl1/a5BJSpoB&quot;</span> +</span><br><span class="line">    <span class="string">&quot;MINBu57l3xowx9huJ/WdKIYJSWeNrIhXqRoWOvy04qmiKgTxQtRx/W6SLZa9AD+K&quot;</span> +</span><br><span class="line">    <span class="string">&quot;G8AHMoU35wKBgQCew/2/hh/lVsNy0sVWPGKFAGeu8t9JDSXRyW5TP7HLCioUR9uY&quot;</span> +</span><br><span class="line">    <span class="string">&quot;JPm75Dj3SIr4Ajbc7xSoXMNnyMSnHH9OXX/hVD5oxC1WgCCVcmrCMt/hwSnZaElW&quot;</span> +</span><br><span class="line">    <span class="string">&quot;CLwPR0B9wl83CGY+ZAJoZSyDhgim2P0qjjUm4hjSTDMhFN0tpWXDeGn3KQKBgDuf&quot;</span> +</span><br><span class="line">    <span class="string">&quot;aK6ZtXlxsSUpQIj6gGQ8g5tMOJwRDEaAiw577S+XQ2PrUJzTQvcG0vKxwWa/6P/Y&quot;</span> +</span><br><span class="line">    <span class="string">&quot;G27j0WLnrEotohWQlBkIKry65P+ABkuI0/ecnC5CWvQR+VGvudG17ujHvUlMM+ru&quot;</span> +</span><br><span class="line">    <span class="string">&quot;L+/xzS7T/xlg9tpGfgZ9nCSdiRDRGwgRUxLsfSDRAoGBAJNAoT3fZWP+i8Au3sWk&quot;</span> +</span><br><span class="line">    <span class="string">&quot;fjxQZgSoMHZU4u1Vy5i7KnVPp4qIxZcIpz7RIex4XcjyYGVJnwyHoKwAKoMqjKd5&quot;</span> +</span><br><span class="line">    <span class="string">&quot;87EJvvznCNq9RbJX4wpEooTQ7Rq6Me3H18XO+/s6M8IpKANDK+tYIVFJ8qjiYAdb&quot;</span> +</span><br><span class="line">    <span class="string">&quot;afCUvJeq6jh3W4t0Iz/oLdw7&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明一个密钥工厂用来产生PublicKey和PrivateKey对象。</span></span><br><span class="line"><span class="type">KeyFactory</span> <span class="variable">keyFactory</span> <span class="operator">=</span> KeyFactory.getInstance(<span class="string">&quot;RSA&quot;</span>);</span><br><span class="line"><span class="type">byte</span>[] publickeyBytes = Base64.getDecoder().decode(string_publickey);</span><br><span class="line"><span class="type">X509EncodedKeySpec</span> <span class="variable">keySpec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">X509EncodedKeySpec</span>(publickeyBytes);</span><br><span class="line"><span class="type">PublicKey</span> <span class="variable">publicKey</span> <span class="operator">=</span> keyFactory.generatePublic(keySpec);</span><br><span class="line"></span><br><span class="line"><span class="type">byte</span>[] privatekeyBytes = Base64.getDecoder().decode(string_privateKey);</span><br><span class="line"><span class="type">PKCS8EncodedKeySpec</span> <span class="variable">privateKeySpec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PKCS8EncodedKeySpec</span>(privatekeyBytes);</span><br><span class="line"><span class="type">PrivateKey</span> <span class="variable">privateKey</span> <span class="operator">=</span> keyFactory.generatePrivate(privateKeySpec);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 签名</span></span><br><span class="line"><span class="type">String</span> <span class="variable">signature</span> <span class="operator">=</span> sign(message, privateKey);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 验证</span></span><br><span class="line"><span class="type">boolean</span> <span class="variable">isVerified</span> <span class="operator">=</span> verify(message, signature, publicKey);</span><br><span class="line"></span><br><span class="line">System.out.println(<span class="string">&quot;Message: &quot;</span> + message);</span><br><span class="line">System.out.println(<span class="string">&quot;Signature: &quot;</span> + signature);</span><br><span class="line">System.out.println(<span class="string">&quot;Verification result: &quot;</span> + isVerified);</span><br><span class="line">System.out.println(<span class="string">&quot;-----------------------------------&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>sign</code>和<code>verify</code>代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">sign</span><span class="params">(String messageHash, PrivateKey privateKey)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">Signature</span> <span class="variable">signature</span> <span class="operator">=</span> Signature.getInstance(<span class="string">&quot;SHA256withRSA&quot;</span>);</span><br><span class="line">        signature.initSign(privateKey);</span><br><span class="line">        signature.update(messageHash.getBytes());</span><br><span class="line">        <span class="type">byte</span>[] signedBytes = signature.sign();</span><br><span class="line">        <span class="keyword">return</span> Base64.getEncoder().encodeToString(signedBytes);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">boolean</span> <span class="title function_">verify</span><span class="params">(String messageHash, String signature, PublicKey publicKey)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">Signature</span> <span class="variable">signature</span> <span class="operator">=</span> Signature.getInstance(<span class="string">&quot;SHA256withRSA&quot;</span>);</span><br><span class="line">        signature.initVerify(publicKey);</span><br><span class="line">        signature.update(messageHash.getBytes());</span><br><span class="line">        <span class="keyword">return</span> sig.verify(Base64.getDecoder().decode(signature));</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出结果如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Message: hello world!</span><br><span class="line">Signature: aZuH+iI4ERsAQyH5RB/JFR/v8ip1c+iJZhGCqj8a78PeYCz3q72FNbjqpXm22xkTAAOrTihF5+EQgjE7yp71ocUX/8obHDtP1UZLwYx6LE7zAF0QCeDCiIbARC1VmbHoFGzNI4PIxdPBNQ9aTtFoCsChE3OMoY6Gda370SrCmki9zb0ognVjXFgSUct0AxhstRlAvPkTaf+5vNDvgp6iDavh5OONMbq27Z9gNoi4w8r+KbEq7O8vJ3X5Q3yG2ArUpJlp0uwpUNgSCvuEUb9Mctl6tgMIaZ198GDsUGpARjL37+Qs4qQhUxPu3LAg2KTt6F+dIwtRJrGP1SD5TC1Wyg==</span><br><span class="line">Verification result: <span class="literal">true</span></span><br><span class="line">-----------------------------------</span><br></pre></td></tr></table></figure>
+
+<h3 id="SHA256-amp-RSA分开实现"><a href="#SHA256-amp-RSA分开实现" class="headerlink" title="SHA256&amp;RSA分开实现"></a>SHA256&amp;RSA分开实现</h3><p>接下来我们对明文消息使用SHA256和RSA逐步处理：</p>
+<p>代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">MessageDigest</span> <span class="variable">sha256</span> <span class="operator">=</span> MessageDigest.getInstance(<span class="string">&quot;SHA-256&quot;</span>);</span><br><span class="line">sha256.update(message.getBytes());</span><br><span class="line"><span class="type">byte</span>[] digestResult = sha256.digest();</span><br><span class="line"><span class="type">String</span> <span class="variable">hex_digestResult</span> <span class="operator">=</span> HexBin.encode(digestResult);</span><br><span class="line"><span class="type">String</span> <span class="variable">base64_digestResult</span> <span class="operator">=</span>  Base64.getEncoder().encodeToString(digestResult);</span><br><span class="line"></span><br><span class="line"><span class="type">Cipher</span> <span class="variable">cipher</span> <span class="operator">=</span> Cipher.getInstance(<span class="string">&quot;RSA/ECB/NOPadding&quot;</span>);</span><br><span class="line">cipher.init(Cipher.ENCRYPT_MODE,privateKey);</span><br><span class="line"><span class="type">byte</span>[] bt = cipher.doFinal(digestResult);</span><br><span class="line">System.out.println(<span class="string">&quot;Signature_base64: &quot;</span> + Base64.getEncoder().encodeToString(bt));</span><br></pre></td></tr></table></figure>
+
+<p>输出结果如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Signature: CbS16KUwv38eaxeD/OPFBVcCYWSUwlZcGdlMp/5DpBEbXUEjW3z17pW4ee+EuxJlkk8BmGr/y4X8efgq0ejSAhhuSH0k3eeZptae9HaBoNm3rGtJtqboUq8u5rlFtl1OCSvJDPiXTE4tbM1hezBxTR+O8KU/qgRBXfURx+SRIQ+BJQDpUy7JY7B2sfoihynt6pyKMJiUPU9mLGy2fHXD2gjzJPIgO6/lsemU7x9H6wd/6bzolgvdkMvXBccucfdV/pnvPcNUtGP36KpTrnUE+CaomJvlwZAdJQ5JRw1c94dlLh24i9+d0BFA5yZd4DrSh5VwvM4bwiWEfeH6ACTGrA==</span><br></pre></td></tr></table></figure>
+
+<p><strong>发现整体实现和分开实现的结果并不一致！</strong></p>
+<h3 id="差异分析"><a href="#差异分析" class="headerlink" title="差异分析"></a>差异分析</h3><p>由于俩者结果并不一致，所以我们猜测上述的数字签名算法并不只是单纯的SHA256加RSA。</p>
+<p>1、首先对数字签名生成的base64密文使用RSA公钥解密处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">MessageDigest</span> <span class="variable">sha256</span> <span class="operator">=</span> MessageDigest.getInstance(<span class="string">&quot;SHA-256&quot;</span>);</span><br><span class="line">sha256.update(message.getBytes());</span><br><span class="line"><span class="type">byte</span>[] digestResult = sha256.digest();</span><br><span class="line"><span class="type">String</span> <span class="variable">hex_digestResult</span> <span class="operator">=</span> HexBin.encode(digestResult);</span><br><span class="line">System.out.println(<span class="string">&quot;hex: &quot;</span> + hex_digestResult);</span><br><span class="line"></span><br><span class="line">digestResult = Base64.getDecoder().decode(<span class="string">&quot;aZuH+iI4ERsAQyH5RB/JFR/v8ip1c+iJZhGCqj8a78PeYCz3q72FNbjqpXm22xkTAAOrTihF5+EQgjE7yp71ocUX/8obHDtP1UZLwYx6LE7zAF0QCeDCiIbARC1VmbHoFGzNI4PIxdPBNQ9aTtFoCsChE3OMoY6Gda370SrCmki9zb0ognVjXFgSUct0AxhstRlAvPkTaf+5vNDvgp6iDavh5OONMbq27Z9gNoi4w8r+KbEq7O8vJ3X5Q3yG2ArUpJlp0uwpUNgSCvuEUb9Mctl6tgMIaZ198GDsUGpARjL37+Qs4qQhUxPu3LAg2KTt6F+dIwtRJrGP1SD5TC1Wyg==&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">Cipher</span> <span class="variable">cipher</span> <span class="operator">=</span> Cipher.getInstance(<span class="string">&quot;RSA/ECB/NOPadding&quot;</span>);</span><br><span class="line">cipher.init(Cipher.DECRYPT_MODE,publicKey);</span><br><span class="line"><span class="type">byte</span>[] bt = cipher.doFinal(digestResult);</span><br><span class="line">System.out.println(<span class="string">&quot;Signature: &quot;</span> + HexBin.encode(bt));</span><br></pre></td></tr></table></figure>
+
+<p>这里我们使用hex转换。输出结果如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hex: 7509E5BDA0C762D2BAC7F90D758B5B2263FA01CCBC542AB5E3DF163BE08E6CA9</span><br><span class="line">Signature: 0001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF003031300D0609608648016503040201050004207509E5BDA0C762D2BAC7F90D758B5B2263FA01CCBC542AB5E3DF163BE08E6CA9</span><br></pre></td></tr></table></figure>
+
+<p>可以发现，我们明文消息进行<code>sha256</code>加密后的hex值正好是<code>Signature</code>的后半段,且前半段是固定的。</p>
+<p>所以得出结论：</p>
+<p><strong>java中的数字签名代码是将明文消息进行数字摘要处理后对数字摘要的hex在前边进行拼接固定字符串，之后取拼接后的字符串再进行RSA私钥加密。</strong></p>
+<h3 id="结论验证"><a href="#结论验证" class="headerlink" title="结论验证"></a>结论验证</h3><p>所以我们可以写一段代码进行验证：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">message</span> <span class="operator">=</span> <span class="string">&quot;hello world!&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">string_publickey</span> <span class="operator">=</span> <span class="string">&quot;MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAl1fMaxLw1PP6DYnmjNDJ&quot;</span> +</span><br><span class="line">    <span class="string">&quot;/xc2a1siGI9lvzAML/nKTLwKMTgUsYRIFBGetlQqihZLwIi4FHwFrsB4K7Q1wBLj&quot;</span> +</span><br><span class="line">    <span class="string">&quot;a9juUnQj603K9E8JGHK/BQbo4qkPIq4bYiJoPefYmY/xZuN34tpLcgd+M0L7wdnZ&quot;</span> +</span><br><span class="line">    <span class="string">&quot;sjAXyesh2/Ofz24a3y+EcVlamsl090jUTVVFDUByLxpGhFmLEzKip8114Y5ArWoV&quot;</span> +</span><br><span class="line">    <span class="string">&quot;kr46SLwZFvdOlcNiKJRhyG4nv7/6c4lzKQ0PFf1qBalZjoBOCqqtQBk8csuy0ujS&quot;</span> +</span><br><span class="line">    <span class="string">&quot;wKNQCxZ7SxkWXNggeH2V3F6FWmcrdBSNB3XgY4/P2UsyEvxUXSvbTEJ3JPYMVGxK&quot;</span> +</span><br><span class="line">    <span class="string">&quot;QQIDAQAB&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">string_privateKey</span> <span class="operator">=</span> <span class="string">&quot;MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCXV8xrEvDU8/oN&quot;</span> +</span><br><span class="line">    <span class="string">&quot;ieaM0Mn/FzZrWyIYj2W/MAwv+cpMvAoxOBSxhEgUEZ62VCqKFkvAiLgUfAWuwHgr&quot;</span> +</span><br><span class="line">    <span class="string">&quot;tDXAEuNr2O5SdCPrTcr0TwkYcr8FBujiqQ8irhtiImg959iZj/Fm43fi2ktyB34z&quot;</span> +</span><br><span class="line">    <span class="string">&quot;QvvB2dmyMBfJ6yHb85/PbhrfL4RxWVqayXT3SNRNVUUNQHIvGkaEWYsTMqKnzXXh&quot;</span> +</span><br><span class="line">    <span class="string">&quot;jkCtahWSvjpIvBkW906Vw2IolGHIbie/v/pziXMpDQ8V/WoFqVmOgE4Kqq1AGTxy&quot;</span> +</span><br><span class="line">    <span class="string">&quot;y7LS6NLAo1ALFntLGRZc2CB4fZXcXoVaZyt0FI0HdeBjj8/ZSzIS/FRdK9tMQnck&quot;</span> +</span><br><span class="line">    <span class="string">&quot;9gxUbEpBAgMBAAECggEAJhXxuvZixex5/mM4MjKuyrOgPccK3wxjKghg4MfnKYVe&quot;</span> +</span><br><span class="line">    <span class="string">&quot;uUEoL/4el3JRsweeRu7SdGrTjFAjq/UCqNjqd+Io+jB21SgmC+ahTvb+zni96nlx&quot;</span> +</span><br><span class="line">    <span class="string">&quot;LO0ngm43NOx8uCt6vjZTpTVUK7IMr28ESskuCvwURTvGGMnD1RLLoktOluDh3xYe&quot;</span> +</span><br><span class="line">    <span class="string">&quot;0dAwtnvYwV/ptVWKESjLwI7vpyNzdWw8zyDeHnEf1Km/9vfXfZFlkfcHiHE9ZBFL&quot;</span> +</span><br><span class="line">    <span class="string">&quot;Fs9cUeA1GE90sWh6XNroDphczKTBtHq7DIEvkB0A2q1LZK0t26Bp8iX8OKSg/NZr&quot;</span> +</span><br><span class="line">    <span class="string">&quot;xKxUNJpM4PEE/8Jn3OGUTd431FE0d5U1GVEsfBKQEwKBgQDK/DT+1zmR4eEVi7yv&quot;</span> +</span><br><span class="line">    <span class="string">&quot;FVvW3OJzjq8YLICQYxWeOYSO7qp48qzMKeFcOMH9fZBp3KLD1xiMZw7dhXIgKwWM&quot;</span> +</span><br><span class="line">    <span class="string">&quot;PVv8gTUQGBURljMMTPNq9ntHV3Sdvu4SlqyElMjUZ8iDFZ781cDlXn5qVACfqT3i&quot;</span> +</span><br><span class="line">    <span class="string">&quot;nH7BxOhjv4rscWDhB3fiRAcHlwKBgQC+3r2mMd7Tkn1VqdZpYQ4W+GUjHI9cDoKL&quot;</span> +</span><br><span class="line">    <span class="string">&quot;nWGGo89TMCf0lFCIgHKSx5pHfJmQ+RgbOXaiQQdjDUuNerOClZRHLl1/a5BJSpoB&quot;</span> +</span><br><span class="line">    <span class="string">&quot;MINBu57l3xowx9huJ/WdKIYJSWeNrIhXqRoWOvy04qmiKgTxQtRx/W6SLZa9AD+K&quot;</span> +</span><br><span class="line">    <span class="string">&quot;G8AHMoU35wKBgQCew/2/hh/lVsNy0sVWPGKFAGeu8t9JDSXRyW5TP7HLCioUR9uY&quot;</span> +</span><br><span class="line">    <span class="string">&quot;JPm75Dj3SIr4Ajbc7xSoXMNnyMSnHH9OXX/hVD5oxC1WgCCVcmrCMt/hwSnZaElW&quot;</span> +</span><br><span class="line">    <span class="string">&quot;CLwPR0B9wl83CGY+ZAJoZSyDhgim2P0qjjUm4hjSTDMhFN0tpWXDeGn3KQKBgDuf&quot;</span> +</span><br><span class="line">    <span class="string">&quot;aK6ZtXlxsSUpQIj6gGQ8g5tMOJwRDEaAiw577S+XQ2PrUJzTQvcG0vKxwWa/6P/Y&quot;</span> +</span><br><span class="line">    <span class="string">&quot;G27j0WLnrEotohWQlBkIKry65P+ABkuI0/ecnC5CWvQR+VGvudG17ujHvUlMM+ru&quot;</span> +</span><br><span class="line">    <span class="string">&quot;L+/xzS7T/xlg9tpGfgZ9nCSdiRDRGwgRUxLsfSDRAoGBAJNAoT3fZWP+i8Au3sWk&quot;</span> +</span><br><span class="line">    <span class="string">&quot;fjxQZgSoMHZU4u1Vy5i7KnVPp4qIxZcIpz7RIex4XcjyYGVJnwyHoKwAKoMqjKd5&quot;</span> +</span><br><span class="line">    <span class="string">&quot;87EJvvznCNq9RbJX4wpEooTQ7Rq6Me3H18XO+/s6M8IpKANDK+tYIVFJ8qjiYAdb&quot;</span> +</span><br><span class="line">    <span class="string">&quot;afCUvJeq6jh3W4t0Iz/oLdw7&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明一个密钥工厂用来产生PublicKey和PrivateKey对象。</span></span><br><span class="line"><span class="type">KeyFactory</span> <span class="variable">keyFactory</span> <span class="operator">=</span> KeyFactory.getInstance(<span class="string">&quot;RSA&quot;</span>);</span><br><span class="line"><span class="type">byte</span>[] publickeyBytes = Base64.getDecoder().decode(string_publickey);</span><br><span class="line"><span class="type">X509EncodedKeySpec</span> <span class="variable">keySpec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">X509EncodedKeySpec</span>(publickeyBytes);</span><br><span class="line"><span class="type">PublicKey</span> <span class="variable">publicKey</span> <span class="operator">=</span> keyFactory.generatePublic(keySpec);</span><br><span class="line"></span><br><span class="line"><span class="type">byte</span>[] privatekeyBytes = Base64.getDecoder().decode(string_privateKey);</span><br><span class="line"><span class="type">PKCS8EncodedKeySpec</span> <span class="variable">privateKeySpec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PKCS8EncodedKeySpec</span>(privatekeyBytes);</span><br><span class="line"><span class="type">PrivateKey</span> <span class="variable">privateKey</span> <span class="operator">=</span> keyFactory.generatePrivate(privateKeySpec);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 签名</span></span><br><span class="line"><span class="type">String</span> <span class="variable">signature</span> <span class="operator">=</span> sign(message, privateKey);</span><br><span class="line"><span class="comment">// 验证</span></span><br><span class="line"><span class="type">boolean</span> <span class="variable">isVerified</span> <span class="operator">=</span> verify(message, signature, publicKey);</span><br><span class="line"></span><br><span class="line">System.out.println(<span class="string">&quot;Message: &quot;</span> + message);</span><br><span class="line">System.out.println(<span class="string">&quot;Signature: &quot;</span> + signature);</span><br><span class="line">System.out.println(<span class="string">&quot;Verification result: &quot;</span> + isVerified);</span><br><span class="line">System.out.println(<span class="string">&quot;-----------------------------------&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">MessageDigest</span> <span class="variable">sha256</span> <span class="operator">=</span> MessageDigest.getInstance(<span class="string">&quot;SHA-256&quot;</span>);</span><br><span class="line">sha256.update(message.getBytes());</span><br><span class="line"><span class="type">byte</span>[] digestResult = sha256.digest();</span><br><span class="line"><span class="type">String</span> <span class="variable">hex_digestResult</span> <span class="operator">=</span> HexBin.encode(digestResult);</span><br><span class="line"><span class="type">String</span> <span class="variable">temp</span> <span class="operator">=</span> <span class="string">&quot;0001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF003031300D060960864801650304020105000420&quot;</span> + hex_digestResult;       <span class="comment">//拼接操作</span></span><br><span class="line"><span class="type">Cipher</span> <span class="variable">cipher</span> <span class="operator">=</span> Cipher.getInstance(<span class="string">&quot;RSA/ECB/NOPadding&quot;</span>);</span><br><span class="line">cipher.init(Cipher.ENCRYPT_MODE,privateKey);</span><br><span class="line"><span class="type">byte</span>[] bt = cipher.doFinal(HexBin.decode(temp));</span><br><span class="line">System.out.println(<span class="string">&quot;Signature: &quot;</span> + Base64.getEncoder().encodeToString(bt));</span><br></pre></td></tr></table></figure>
+
+<p>输出结果如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Message: hello world!</span><br><span class="line">Signature: aZuH+iI4ERsAQyH5RB/JFR/v8ip1c+iJZhGCqj8a78PeYCz3q72FNbjqpXm22xkTAAOrTihF5+EQgjE7yp71ocUX/8obHDtP1UZLwYx6LE7zAF0QCeDCiIbARC1VmbHoFGzNI4PIxdPBNQ9aTtFoCsChE3OMoY6Gda370SrCmki9zb0ognVjXFgSUct0AxhstRlAvPkTaf+5vNDvgp6iDavh5OONMbq27Z9gNoi4w8r+KbEq7O8vJ3X5Q3yG2ArUpJlp0uwpUNgSCvuEUb9Mctl6tgMIaZ198GDsUGpARjL37+Qs4qQhUxPu3LAg2KTt6F+dIwtRJrGP1SD5TC1Wyg==</span><br><span class="line">Verification result: <span class="literal">true</span></span><br><span class="line">-----------------------------------</span><br><span class="line">Signature: aZuH+iI4ERsAQyH5RB/JFR/v8ip1c+iJZhGCqj8a78PeYCz3q72FNbjqpXm22xkTAAOrTihF5+EQgjE7yp71ocUX/8obHDtP1UZLwYx6LE7zAF0QCeDCiIbARC1VmbHoFGzNI4PIxdPBNQ9aTtFoCsChE3OMoY6Gda370SrCmki9zb0ognVjXFgSUct0AxhstRlAvPkTaf+5vNDvgp6iDavh5OONMbq27Z9gNoi4w8r+KbEq7O8vJ3X5Q3yG2ArUpJlp0uwpUNgSCvuEUb9Mctl6tgMIaZ198GDsUGpARjL37+Qs4qQhUxPu3LAg2KTt6F+dIwtRJrGP1SD5TC1Wyg==</span><br></pre></td></tr></table></figure>
+
+<p><strong>此时俩者结果一致！</strong></p>
+<h2 id="安卓逆向Hook通杀"><a href="#安卓逆向Hook通杀" class="headerlink" title="安卓逆向Hook通杀"></a>安卓逆向Hook通杀</h2><p>没什么好写的。。</p>
+<p>因为调用的是java层标准加密库，直接hook对于函数即可。</p>
+<h3 id="1、MessageDigest类"><a href="#1、MessageDigest类" class="headerlink" title="1、MessageDigest类"></a>1、MessageDigest类</h3><p>hook update或digest可以获得明文。</p>
+<h3 id="2、Ciper类"><a href="#2、Ciper类" class="headerlink" title="2、Ciper类"></a>2、Ciper类</h3><p>hook init可以获得密钥和IV(CBC模式下)。</p>
+<p>hook dofinal可以获得密文或明文。</p>
+<h3 id="3、Signature类"><a href="#3、Signature类" class="headerlink" title="3、Signature类"></a>3、Signature类</h3><p>hook update可以获得密文或明文。</p>
+<p>hook initsign利用获得私钥。</p>
+<p>hook initverify可以获得公钥。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://bailan2.github.io">摆烂小子</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://bailan2.github.io/2025/01/26/Android-%E5%AF%86%E7%A0%81%E5%AD%A6%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D/">https://bailan2.github.io/2025/01/26/Android-%E5%AF%86%E7%A0%81%E5%AD%A6%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/./img/android.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer></script></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div><div id="comment-switch"><span class="first-comment">Valine</span><span class="switch-btn"></span><span class="second-comment">Disqus</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div><div><div id="disqus_thread"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/title.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">摆烂小子</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">89</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xxxxx" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="https://mail.qq.com/" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="toc-number">1.</span> <span class="toc-text">数字签名</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.1.</span> <span class="toc-text">数字签名介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JAVA%E4%B8%AD%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.2.</span> <span class="toc-text">JAVA中实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E6%95%B4%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.2.1.</span> <span class="toc-text">数字签名整体实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SHA256-amp-RSA%E5%88%86%E5%BC%80%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.2.2.</span> <span class="toc-text">SHA256&amp;RSA分开实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%AE%E5%BC%82%E5%88%86%E6%9E%90"><span class="toc-number">1.2.3.</span> <span class="toc-text">差异分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA%E9%AA%8C%E8%AF%81"><span class="toc-number">1.2.4.</span> <span class="toc-text">结论验证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91Hook%E9%80%9A%E6%9D%80"><span class="toc-number">1.3.</span> <span class="toc-text">安卓逆向Hook通杀</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81MessageDigest%E7%B1%BB"><span class="toc-number">1.3.1.</span> <span class="toc-text">1、MessageDigest类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81Ciper%E7%B1%BB"><span class="toc-number">1.3.2.</span> <span class="toc-text">2、Ciper类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81Signature%E7%B1%BB"><span class="toc-number">1.3.3.</span> <span class="toc-text">3、Signature类</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/01/26/Android-%E5%AF%86%E7%A0%81%E5%AD%A6%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D/" title="Android-密码学数字签名"><img src="/./img/android.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Android-密码学数字签名"/></a><div class="content"><a class="title" href="/2025/01/26/Android-%E5%AF%86%E7%A0%81%E5%AD%A6%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D/" title="Android-密码学数字签名">Android-密码学数字签名</a><time datetime="2025-01-26T03:14:48.000Z" title="Created 2025-01-26 11:14:48">2025-01-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/12/14/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B05-2024%E5%BC%BA%E7%BD%91%E6%9D%AFS8%E7%BA%BF%E4%B8%8A%E5%88%9D%E8%B5%9B/" title="Pwn-高质量比赛题目复现5-2024强网杯S8线上初赛"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Pwn-高质量比赛题目复现5-2024强网杯S8线上初赛"/></a><div class="content"><a class="title" href="/2024/12/14/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B05-2024%E5%BC%BA%E7%BD%91%E6%9D%AFS8%E7%BA%BF%E4%B8%8A%E5%88%9D%E8%B5%9B/" title="Pwn-高质量比赛题目复现5-2024强网杯S8线上初赛">Pwn-高质量比赛题目复现5-2024强网杯S8线上初赛</a><time datetime="2024-12-14T08:56:33.000Z" title="Created 2024-12-14 16:56:33">2024-12-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/12/11/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B04-2024CISCN%E5%88%9D%E8%B5%9B/" title="Pwn-高质量比赛题目复现4-2024CISCN初赛"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Pwn-高质量比赛题目复现4-2024CISCN初赛"/></a><div class="content"><a class="title" href="/2024/12/11/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B04-2024CISCN%E5%88%9D%E8%B5%9B/" title="Pwn-高质量比赛题目复现4-2024CISCN初赛">Pwn-高质量比赛题目复现4-2024CISCN初赛</a><time datetime="2024-12-11T09:35:03.000Z" title="Created 2024-12-11 17:35:03">2024-12-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/12/09/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B03-%E7%AC%AC%E5%85%AD%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%8B%9F%E6%80%81%E7%BA%BF%E4%B8%8B%E8%B5%9B/" title="Pwn-高质量比赛题目复现3-第六届强网拟态线下赛"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Pwn-高质量比赛题目复现3-第六届强网拟态线下赛"/></a><div class="content"><a class="title" href="/2024/12/09/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B03-%E7%AC%AC%E5%85%AD%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%8B%9F%E6%80%81%E7%BA%BF%E4%B8%8B%E8%B5%9B/" title="Pwn-高质量比赛题目复现3-第六届强网拟态线下赛">Pwn-高质量比赛题目复现3-第六届强网拟态线下赛</a><time datetime="2024-12-09T12:06:18.000Z" title="Created 2024-12-09 20:06:18">2024-12-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/12/09/Pwn-%E5%A0%86%E8%BF%9B%E9%98%B6-House%20of%20apple2/" title="Pwn-堆进阶-House of apple2"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Pwn-堆进阶-House of apple2"/></a><div class="content"><a class="title" href="/2024/12/09/Pwn-%E5%A0%86%E8%BF%9B%E9%98%B6-House%20of%20apple2/" title="Pwn-堆进阶-House of apple2">Pwn-堆进阶-House of apple2</a><time datetime="2024-12-09T05:03:31.000Z" title="Created 2024-12-09 13:03:31">2024-12-09</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/./img/android.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By 摆烂小子</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="Toggle Between Traditional Chinese And Simplified Chinese">簡</button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script>function loadDisqus () {
+  var disqus_config = function () {
+    this.page.url = 'https://bailan2.github.io/2025/01/26/Android-%E5%AF%86%E7%A0%81%E5%AD%A6%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D/'
+    this.page.identifier = '2025/01/26/Android-密码学数字签名/'
+    this.page.title = 'Android-密码学数字签名'
+  };
+
+  window.disqusReset = () => {
+    DISQUS.reset({
+      reload: true,
+      config: disqus_config
+    })
+  }
+
+  if (window.DISQUS) disqusReset()
+  else {
+    (function() { 
+      var d = document, s = d.createElement('script');
+      s.src = 'https://.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  }
+}
+
+if ('Valine' === 'Disqus' || !true) {
+  if (true) btf.loadComment(document.getElementById('disqus_thread'), loadDisqus)
+  else loadDisqus()
+} else {
+  function loadOtherComment () {
+    loadDisqus()
+  }
+}
+</script></div><div class="aplayer no-destroy" data-id="7399261759" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-nest.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  typeof preloader === 'object' && preloader.initLoading()
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+
+  typeof preloader === 'object' && preloader.endLoading()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
